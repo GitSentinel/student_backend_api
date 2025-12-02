@@ -1,7 +1,12 @@
 from fastapi import APIRouter
+from app.schemas import FeatureRequest, FeatureResponse
 
 router = APIRouter(prefix="/feature", tags=["Feature"])
 
-@router.post("/")
-def placeholder_feature():
-    return {"message": "Feature endpoint works"}
+@router.post("/", response_model=FeatureResponse)
+def process_feature(payload: FeatureRequest):
+    # temporary placeholder logic
+    return FeatureResponse(
+        summary=f"Received text of length {len(payload.text)}",
+        sentiment="neutral"
+    )
