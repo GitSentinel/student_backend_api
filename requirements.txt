@@ -1,5 +1,6 @@
 fastapi
 uvicorn
-pydantic
-openai
-pytest
+pydantic>=2.7
+pydantic-settings>=2.0
+python-dotenv
+google-genai>=1.52.0
