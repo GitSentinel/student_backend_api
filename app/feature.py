@@ -1,27 +1,23 @@
 from fastapi import APIRouter
-from app.schemas import FeatureRequest, FeatureResponse
+from pydantic import BaseModel
+from app.ai_service import analyze_text_with_ai
 
-router = APIRouter(prefix="/feature", tags=["Feature"])
+router = APIRouter()
 
-def simple_sentiment(text: str) -> str:
-    text_lower = text.lower()
+class InputText(BaseModel):
+    text: str
 
-    if any(word in text_lower for word in ["happy", "great", "excited", "good"]):
-        return "positive"
-    elif any(word in text_lower for word in ["sad", "stressed", "bad", "tired"]):
-        return "negative"
-    else:
-        return "neutral"
+class AIResponse(BaseModel):
+    summary: str
+    sentiment: str
 
 
-@router.post("/", response_model=FeatureResponse)
-def process_feature(payload: FeatureRequest):
-    text = payload.text
+@router.post("/feature/", response_model=AIResponse)
+async def feature_endpoint(input: InputText):
 
-    summary = text[:50] + "..." if len(text) > 50 else text
-    sentiment = simple_sentiment(text)
+    ai_result = analyze_text_with_ai(input.text)
 
-    return FeatureResponse(
-        summary=summary,
-        sentiment=sentiment
+    return AIResponse(
+        summary=ai_result.get("summary", "AI unavailable."),
+        sentiment=ai_result.get("sentiment", "neutral")
     )
