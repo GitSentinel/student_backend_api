@@ -1,55 +1,51 @@
 import json
 from google import genai
 from app.config import settings
+from app.logging_config import logger
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
-
-# Use stable + correct model
-MODEL_NAME = "models/gemini-flash-latest"
-
+model_name = "models/gemini-2.5-flash"
 
 def analyze_text_with_ai(text: str) -> dict:
-    """
-    Calls Gemini to get:
-    - summary
-    - sentiment
-    Returns: dict
-    """
+    logger.info(f"AI request received. Text length={len(text)} characters")
+
     prompt = f"""
-    Analyze the following text:
+Analyze the following text:
+{text}
 
-    "{text}"
+1. Give a one-line summary.
+2. Give sentiment as positive / negative / neutral.
 
-    1. Give a one-line summary.
-    2. Give sentiment as: positive / negative / neutral.
-
-    Return ONLY valid JSON like this:
-    {{
-      "summary": "...",
-      "sentiment": "..."
-    }}
-    """
+Return ONLY JSON like:
+{{
+  "summary": "...",
+  "sentiment": "..."
+}}
+"""
 
     try:
         response = client.models.generate_content(
-            model=MODEL_NAME,
+            model=model_name,
             contents=prompt
         )
-
         ai_text = response.text.strip()
+        logger.info("AI response received.")
 
-        # Try parsing JSON
         try:
-            return json.loads(ai_text)
-        except:
-            print("AI returned non-JSON:", ai_text)
+            parsed = json.loads(ai_text)
+            logger.info("AI JSON parsed successfully.")
+            return parsed
+
+        except Exception as e:
+            logger.error(f"Failed to parse AI JSON: {e}")
+            logger.error(f"Raw AI output: {ai_text}")
             return {
                 "summary": "AI unavailable.",
                 "sentiment": "neutral"
             }
 
     except Exception as e:
-        print("Gemini Error:", e)
+        logger.error(f"Gemini API call failed: {e}")
         return {
             "summary": "AI unavailable.",
             "sentiment": "neutral"
