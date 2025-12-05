@@ -10,18 +10,19 @@ def analyze_text_with_ai(text: str) -> dict:
     logger.info(f"AI request received. Text length={len(text)} characters")
 
     prompt = f"""
-Analyze the following text:
-{text}
+    Analyze the following text strictly and return ONLY valid JSON.
 
-1. Give a one-line summary.
-2. Give sentiment as positive / negative / neutral.
+    Text: "{text}"
 
-Return ONLY JSON like:
-{{
-  "summary": "...",
-  "sentiment": "..."
-}}
-"""
+    Respond in exactly this JSON format:
+
+    {{
+      "summary": "one sentence summary",
+      "sentiment": "positive/negative/neutral"
+    }}
+
+    Do not include explanations, markdown, or extra text.
+    """
 
     try:
         response = client.models.generate_content(
